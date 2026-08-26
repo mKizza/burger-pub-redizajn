@@ -1,0 +1,76 @@
+@import "tailwindcss";
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  /* background-color: rgba(0, 0, 0, 0.904); */
+}
+
+body {
+  background-color: rgba(0, 0, 0, 0.904);
+}
+
+nav a {
+  text-decoration: none;
+  letter-spacing: 2px;
+  color: white;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+nav a:hover {
+  color: #f58220;
+}
+
+.reservation {
+  display: inline-block;
+  padding: 11px 22px;
+  border: 2px solid #f58220;
+  border-radius: 8px;
+  color: #f58220;
+  text-decoration: none;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.reservation:hover {
+  color: white;
+  background-color: #f58220;
+}
+
+.background-image {
+  /* margin-left: auto; */
+  -webkit-mask-image:
+    linear-gradient(to bottom, transparent 0%, black 15%),
+    linear-gradient(to right, transparent 0%, black 15%),
+    linear-gradient(to top, transparent 0%, black 15%);
+  -webkit-mask-composite: source-in;
+
+  mask-image:
+    linear-gradient(to bottom, transparent 0%, black 15%),
+    linear-gradient(to right, transparent 0%, black 15%),
+    linear-gradient(to top, transparent 0%, black 15%);
+  mask-composite: intersect;
+}
+
+.allside-padding {
+  padding-left: 30px;
+  padding-right: 30px;
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-15%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 10s linear infinite;
+}
