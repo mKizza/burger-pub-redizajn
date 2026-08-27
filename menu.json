@@ -1,0 +1,135 @@
+[
+  {
+    "id": 1,
+    "name": "Classic Burger",
+    "image": "/burgers-images/food1-1.JPG",
+    "description": "Beef patty, fresh lettuce, tomato and our special sauce.",
+    "price": "12.90"
+  },
+  {
+    "id": 2,
+    "name": "Cheese Burger",
+    "image": "/burgers-images/food-2.JPG",
+    "description": "Juicy beef patty, melted cheddar cheese, fresh lettuce and special sauce.",
+    "price": "13.90"
+  },
+  {
+    "id": 3,
+    "name": "Bacon Burger",
+    "image": "/burgers-images/food-3.JPG",
+    "description": "Beef patty, crispy bacon, cheddar cheese, lettuce and smoky sauce.",
+    "price": "14.90"
+  },
+  {
+    "id": 4,
+    "name": "BBQ Burger",
+    "image": "/burgers-images/food-4.JPG",
+    "description": "Beef patty, cheddar cheese, crispy onions and smoky BBQ sauce.",
+    "price": "14.50"
+  },
+  {
+    "id": 5,
+    "name": "Double Burger",
+    "image": "/burgers-images/food-5.JPG",
+    "description": "Two juicy beef patties, double cheddar cheese, lettuce and special sauce.",
+    "price": "16.90"
+  },
+  {
+    "id": 6,
+    "name": "Chicken Burger",
+    "image": "/burgers-images/food-6.JPG",
+    "description": "Grilled chicken fillet, fresh lettuce, tomato and creamy house sauce.",
+    "price": "13.90"
+  },
+  {
+    "id": 7,
+    "name": "Crispy Chicken Burger",
+    "image": "/burgers-images/food-7.JPG",
+    "description": "Crispy chicken fillet, fresh lettuce, tomato and creamy garlic sauce.",
+    "price": "14.50"
+  },
+  {
+    "id": 8,
+    "name": "Spicy Burger",
+    "image": "/burgers-images/food-8.JPG",
+    "description": "Beef patty, spicy jalapeños, cheddar cheese, lettuce and hot sauce.",
+    "price": "14.90"
+  },
+  {
+    "id": 9,
+    "name": "Jalapeño Burger",
+    "image": "/burgers-images/food-9.JPG",
+    "description": "Beef patty, jalapeños, melted cheddar cheese, crispy onions and spicy sauce.",
+    "price": "15.20"
+  },
+  {
+    "id": 10,
+    "name": "Mushroom Burger",
+    "image": "/burgers-images/food-10.JPG",
+    "description": "Beef patty, sautéed mushrooms, cheddar cheese, lettuce and creamy sauce.",
+    "price": "14.90"
+  },
+  {
+    "id": 11,
+    "name": "Crispy Bacon Burger",
+    "image": "/burgers-images/food-11.JPG",
+    "description": "Beef patty, crispy bacon, cheddar cheese, crispy onions and house sauce.",
+    "price": "15.50"
+  },
+  {
+    "id": 12,
+    "name": "BBQ Bacon Burger",
+    "image": "/burgers-images/food-12.JPG",
+    "description": "Beef patty, crispy bacon, cheddar cheese, caramelized onions and BBQ sauce.",
+    "price": "15.90"
+  },
+  {
+    "id": 13,
+    "name": "Triple Burger",
+    "image": "/burgers-images/food-13.JPG",
+    "description": "Three juicy beef patties, triple cheddar cheese, lettuce and special sauce.",
+    "price": "19.90"
+  },
+  {
+    "id": 14,
+    "name": "Texas Burger",
+    "image": "/burgers-images/food-14.JPG",
+    "description": "Beef patty, crispy bacon, cheddar cheese, onion rings and smoky BBQ sauce.",
+    "price": "16.50"
+  },
+  {
+    "id": 15,
+    "name": "Chili Burger",
+    "image": "/burgers-images/food-15.JPG",
+    "description": "Beef patty, spicy chili, cheddar cheese, fresh lettuce and hot sauce.",
+    "price": "15.20"
+  },
+  {
+    "id": 16,
+    "name": "Smoky Burger",
+    "image": "/burgers-images/food-16.JPG",
+    "description": "Beef patty, smoked cheddar, crispy onions, bacon and smoky BBQ sauce.",
+    "price": "15.90"
+  },
+  {
+    "id": 17,
+    "name": "Big Pub Burger",
+    "image": "/burgers-images/food-17.JPG",
+    "description": "Large beef patty, bacon, cheddar cheese, lettuce, tomato and our pub sauce.",
+    "price": "17.90"
+  },
+  {
+    "id": 18,
+    "name": "Ultimate Burger",
+    "image": "/burgers-images/food-18.JPG",
+    "description": "Beef patty, bacon, double cheddar, crispy onions, jalapeños and special sauce.",
+    "price": "18.50"
+  },
+  {
+    "id": 19,
+    "name": "Monster Burger",
+    "image": "/burgers-images/food-19.JPG",
+    "description": "Three beef patties, crispy bacon, double cheddar, onions and our signature monster sauce.",
+    "price": "21.90"
+  }
+]

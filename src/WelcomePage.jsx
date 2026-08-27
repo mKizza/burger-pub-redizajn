@@ -1,6 +1,6 @@
 function WelcomePage() {
   return (
-    <div className="-translate-y-50">
+    <div className="-translate-y-20 lg:-translate-y-10">
       <h1 className="ml-5 text-[3rem] font-bold leading-[1.1] text-white sm:text-[4rem] lg:ml-[10rem] lg:text-[6rem]">
         WELCOME TO
       </h1>

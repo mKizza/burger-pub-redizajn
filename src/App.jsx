@@ -15,7 +15,7 @@ function App() {
           <Backgroundpicture />
           <FooterText />
         </div>
-        <div className="h-screen flex flex-col">
+        <div className="relative h-screen">
           <BurgerMarquee />
           <SecondPageBackgroundImage />
         </div>
