@@ -1,26 +1,20 @@
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import "./App.css";
-import Backgroundpicture from "./Backgroundpicture";
-import BurgerMarquee from "./BurgersMarquee";
-import FooterText from "./FooterText";
-
-import MenuTrack from "./MenuTrack";
-import SecondPageBackgroundImage from "./SecondPageBackgroundImage";
+import Home from "./Home";
+import Menu from "./Menu";
+import Contact from "./Contact";
 
 function App() {
   return (
-    <div>
-      <div className="flex w-full flex-col gap-10">
-        <div className="relative min-h-screen bg-[rgba(0,0,0,0.904)]">
-          <MenuTrack />
-          <Backgroundpicture />
-          <FooterText />
-        </div>
-        <div className="relative h-screen">
-          <BurgerMarquee />
-          <SecondPageBackgroundImage />
-        </div>
+    <BrowserRouter>
+      <div className="w-full h-screen">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/menu" element={<Menu />} />
+          <Route path="/contact" element={<Contact />} />
+        </Routes>
       </div>
-    </div>
+    </BrowserRouter>
   );
 }
 

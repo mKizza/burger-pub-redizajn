@@ -1,41 +1,21 @@
-import { useState } from "react";
-import TimeOpened from "./TimeOpened";
-
 function IconsPage() {
-  const [timeOpen, setTimeOpen] = useState(false);
-
   return (
-    <>
-      <div className="flex flex-row w-full justify-around items-start gap-5">
-        <div className="flex flex-col items-center">
-          <img
-            src="/icons/sat.png"
-            className="w-8 h-8 object-contain cursor-pointer"
-            onClick={() => setTimeOpen(true)}
-          />
-          <span>10:30-23h</span>
-        </div>
-
-        <div className="flex flex-col items-center">
-          <a
-            href="https://www.google.com/maps/dir/?api=1&destination=Milbertshofener+Str.+34,+80807+München,+Germany"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <img
-              src="/icons/location.png"
-              className="w-8 h-8 object-contain cursor-pointer"
-            />
-          </a>
-
-          <span>Milbertshofener Str. 34</span>
-          <span>80807 München</span>
-        </div>
+    <a
+      href="https://www.google.com/maps/dir/?api=1&destination=Milbertshofener+Str.+34,+80807+M%C3%BCnchen,+Germany"
+      target="_blank"
+      rel="noopener noreferrer"
+      className="relative z-10 flex flex-row items-center gap-3 -translate-y-12 cursor-pointer pointer-events-auto"
+    >
+      <img
+        src="/icons/location.png"
+        alt="Lokacija"
+        className="w-8 h-8 object-contain cursor-pointer"
+      />
+      <div className="flex flex-col">
+        <span className="text-white">Milbertshofener Str. 34</span>
+        <span className="text-white">80807 München</span>
       </div>
-
-      {/* POPUP JE IZVAN FLEX CONTAINERA */}
-      {timeOpen && <TimeOpened setTimeOpen={setTimeOpen} />}
-    </>
+    </a>
   );
 }
 

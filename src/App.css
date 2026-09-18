@@ -1,4 +1,16 @@
+@import url("https://fonts.googleapis.com/css2?family=Anton&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@100..900&display=swap");
+
 @import "tailwindcss";
+
+@theme {
+  --font-anton: "Anton", sans-serif;
+  --font-montserrat: "Montserrat", sans-serif;
+  --font-oswald: "Oswald", sans-serif;
+  --font-caveat: "Caveat", cursive;
+}
 
 * {
   margin: 0;
@@ -9,18 +21,6 @@
 
 body {
   background-color: rgba(0, 0, 0, 0.904);
-}
-
-nav a {
-  text-decoration: none;
-  letter-spacing: 2px;
-  color: white;
-  cursor: pointer;
-  transition: color 0.2s ease;
-}
-
-nav a:hover {
-  color: #f58220;
 }
 
 .reservation {
@@ -42,17 +42,20 @@ nav a:hover {
 }
 
 .background-image {
-  /* margin-left: auto; */
-  -webkit-mask-image:
-    linear-gradient(to bottom, transparent 0%, black 15%),
-    linear-gradient(to right, transparent 0%, black 15%),
-    linear-gradient(to top, transparent 0%, black 15%);
+  filter: brightness(0.45);
+  -webkit-mask-image: linear-gradient(to top, transparent 0%, black 10%);
   -webkit-mask-composite: source-in;
 
-  mask-image:
-    linear-gradient(to bottom, transparent 0%, black 15%),
-    linear-gradient(to right, transparent 0%, black 15%),
-    linear-gradient(to top, transparent 0%, black 15%);
+  mask-image: linear-gradient(to top, transparent 0%, black 10%);
+  mask-composite: intersect;
+}
+
+.border-filter {
+  filter: brightness(0.85);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 10%);
+  -webkit-mask-composite: source-in;
+
+  mask-image: linear-gradient(to bottom, transparent 0%, black 10%);
   mask-composite: intersect;
 }
 
