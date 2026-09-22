@@ -1,7 +1,7 @@
 function ContactInfo() {
   return (
     <section className="w-full px-5">
-      <div className="grid grid-cols-2 gap-x-5 gap-y-8">
+      <div className="grid grid-cols-2 gap-x-5 gap-y-8 md:justify-items-center lg:justify-items-center">
         {/* LIJEVA KOLONA */}
         <div className="flex flex-col gap-8">
           {/* ADRESSE */}

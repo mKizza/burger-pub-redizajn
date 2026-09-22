@@ -19,7 +19,7 @@ function Contact() {
     >
       {/* MENU TRACK */}
       <div className="relative h-[80px]">
-        <MenuTrack centered />
+        <MenuTrack />
       </div>
 
       {/* KONTAKT NASLOV */}

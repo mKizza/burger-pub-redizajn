@@ -1,6 +1,6 @@
 function ContactMap() {
   return (
-    <section className="mt-12 w-full px-5 flex flex-col gap-5">
+    <section className="mt-12 flex w-full flex-col gap-5 px-5">
       <div className="w-full overflow-hidden rounded-[10px] border border-[#ffaf01]">
         <iframe
           title="Burger Pub München"
@@ -20,21 +20,24 @@ function ContactMap() {
         target="_blank"
         rel="noopener noreferrer"
         className="
-    mt-4
-    flex
-    w-full
-    items-center
-    justify-center
-    border-2
-    border-[#ffaf01]
-    bg-transparent
-    py-3
-    font-oswald
-    text-[14px]
-    font-bold
-    uppercase
-    text-[#ffaf01]
-  "
+          mt-4
+          flex
+          w-full
+          items-center
+          justify-center
+          border-2
+          border-[#ffaf01]
+          bg-transparent
+          py-3
+          font-oswald
+          text-[14px]
+          font-bold
+          uppercase
+          text-[#ffaf01]
+          md:w-[300px]
+          md:self-center
+          lg:w-[320px]
+        "
       >
         In Google Maps öffnen →
       </a>

@@ -6,14 +6,17 @@ function BurgerMarquee() {
       {[...burgers, ...burgers].map((burger, index) => (
         <div
           key={`${burger.id}-${index}`}
-          className="mx-3 flex flex-col items-center"
+          className="mx-3 flex shrink-0 flex-col items-center"
         >
           <img
             src={burger.image}
             alt={burger.name}
-            className="h-28 w-28 lg:h-36 lg:w-36 object-contain text-white border-2 border-[#f58220] rounded-[8px]"
+            className="h-28 w-28 rounded-[8px] border-2 border-[#f58220] object-contain lg:h-36 lg:w-36"
           />
-          <span className="mt-2 text-white font-bold">{burger.name}</span>
+
+          <span className="mt-2 whitespace-nowrap font-bold text-white">
+            {burger.name}
+          </span>
         </div>
       ))}
     </div>

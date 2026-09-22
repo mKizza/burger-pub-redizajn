@@ -121,21 +121,23 @@ function ContactForm() {
         <button
           type="submit"
           className="
-            mt-2
-            w-full
-            border-2
-            border-[#ffaf01]
-            bg-transparent
-            py-3
-            font-oswald
-            text-[14px]
-            font-bold
-            uppercase
-            text-[#ffaf01]
-            transition
-            duration-300
-            hover:bg-[#ffaf01]
-            hover:text-black
+            mt-4
+          flex
+          w-full
+          items-center
+          justify-center
+          border-2
+          border-[#ffaf01]
+          bg-transparent
+          py-3
+          font-oswald
+          text-[14px]
+          font-bold
+          uppercase
+          text-[#ffaf01]
+          md:w-[300px]
+          md:self-center
+          lg:w-[320px]k
           "
         >
           Nachricht senden

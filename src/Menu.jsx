@@ -18,7 +18,7 @@ function Menu() {
     >
       <div className="relative w-full">
         <div className="relative h-[80px]">
-          <MenuTrack centered />
+          <MenuTrack />
         </div>
 
         <UnsereMenuNaslov />
