@@ -11,7 +11,7 @@ function BurgerWallFooter() {
         />
       </div>
 
-      <div className="absolute inset-0 flex items-center justify-start -translate-y-10">
+      <div className="absolute inset-0 flex items-center justify-start lg:-translate-y-10">
         <SecondBackgroundtext />
       </div>
     </div>
