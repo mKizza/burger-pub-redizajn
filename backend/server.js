@@ -12,9 +12,22 @@ const contactRoutes = require("./routes/contactRoutes");
 
 const app = express();
 
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://burgerpubmunchen.de",
+  "https://www.burgerpubmunchen.de",
+  "https://burger-pub-redizajn.vercel.app",
+];
+
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error("Not allowed by CORS"));
+    },
   }),
 );
 
