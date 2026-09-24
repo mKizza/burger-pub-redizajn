@@ -3,6 +3,9 @@ import "./App.css";
 import Home from "./Home";
 import Menu from "./Menu";
 import Contact from "./Contact";
+import AdminLogin from "./components/AdminLogin";
+import Admin from "./components/Admin";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   return (
@@ -12,6 +15,15 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/menu" element={<Menu />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/admin-login" element={<AdminLogin />} />
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute>
+                <Admin />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </div>
     </BrowserRouter>
