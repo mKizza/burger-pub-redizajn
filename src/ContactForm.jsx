@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { API_URL } from "../config";
+import { API_URL } from "./config";
 
 function ContactForm() {
   const [name, setName] = useState("");
