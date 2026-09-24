@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { API_URL } from "../config";
 
 function Admin() {
   const [food, setFood] = useState([]);
@@ -26,8 +27,8 @@ function Admin() {
     async function getData() {
       try {
         const [foodRes, categoriesRes] = await Promise.all([
-          fetch("http://localhost:5000/api/food"),
-          fetch("http://localhost:5000/api/categories"),
+          fetch(`${API_URL}/api/food`),
+          fetch(`${API_URL}/api/categories`),
         ]);
 
         const foodData = await foodRes.json();
@@ -113,8 +114,8 @@ function Admin() {
       }
 
       const url = editingFood
-        ? `http://localhost:5000/api/food/${editingFood._id}`
-        : "http://localhost:5000/api/food";
+        ? `${API_URL}/api/food/${editingFood._id}`
+        : `${API_URL}/api/food`;
 
       const res = await fetch(url, {
         method: editingFood ? "PATCH" : "POST",
@@ -160,7 +161,7 @@ function Admin() {
     try {
       const token = localStorage.getItem("token");
 
-      const res = await fetch(`http://localhost:5000/api/food/${item._id}`, {
+      const res = await fetch(`${API_URL}/api/food/${item._id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -194,7 +195,7 @@ function Admin() {
         .replace(/&/g, "")
         .replace(/\s+/g, "-");
 
-      const res = await fetch("http://localhost:5000/api/categories", {
+      const res = await fetch(`${API_URL}/api/categories`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -245,7 +246,7 @@ function Admin() {
       const token = localStorage.getItem("token");
 
       const res = await fetch(
-        `http://localhost:5000/api/categories/${category._id}`,
+        `${API_URL}/api/categories/${category._id}`,
         {
           method: "DELETE",
           headers: {
@@ -352,7 +353,7 @@ function Admin() {
                           <img
                             src={
                               item.image?.startsWith("/uploads/")
-                                ? `http://localhost:5000${item.image}`
+                                ? `${API_URL}${item.image}`
                                 : item.image
                             }
                             alt={item.name}
@@ -525,7 +526,7 @@ function Admin() {
                       <img
                         src={
                           editingFood.image.startsWith("/uploads/")
-                            ? `http://localhost:5000${editingFood.image}`
+                            ? `${API_URL}${editingFood.image}`
                             : editingFood.image
                         }
                         alt={editingFood.name}

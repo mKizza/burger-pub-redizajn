@@ -1,3 +1,5 @@
+import { API_URL } from "../config";
+
 function MenuSection({ section, first = false }) {
   return (
     <section className={`${first ? "" : "mt-14"} w-full`}>
@@ -23,7 +25,7 @@ function MenuSection({ section, first = false }) {
                 <img
                   src={
                     item.image?.startsWith("/uploads/")
-                      ? `http://localhost:5000${item.image}`
+                      ? `${API_URL}${item.image}`
                       : item.image
                   }
                   alt={item.name}

@@ -1,4 +1,54 @@
+import { useState } from "react";
+
+import { API_URL } from "../config";
+
 function ContactForm() {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
+
+  const [isSending, setIsSending] = useState(false);
+  const [status, setStatus] = useState("");
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+
+    setIsSending(true);
+    setStatus("");
+
+    try {
+      const res = await fetch(`${API_URL}/api/contact`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          message,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || "Fehler beim Senden.");
+      }
+
+      setStatus("success");
+
+      // Očisti formu
+      setName("");
+      setEmail("");
+      setMessage("");
+    } catch (err) {
+      console.error("CONTACT ERROR:", err);
+      setStatus("error");
+    } finally {
+      setIsSending(false);
+    }
+  }
+
   return (
     <section className="w-full px-5 pt-14 pb-12">
       {/* NASLOV */}
@@ -6,6 +56,7 @@ function ContactForm() {
         <h2 className="shrink-0 font-anton text-[36px] uppercase text-[#ffffff]">
           Schreib
         </h2>
+
         <h2 className="shrink-0 font-anton text-[36px] uppercase text-[#ffaf01]">
           uns.
         </h2>
@@ -19,7 +70,7 @@ function ContactForm() {
       </p>
 
       {/* FORMA */}
-      <form className="mt-8 flex flex-col gap-5">
+      <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-5">
         {/* IME */}
         <div className="flex flex-col gap-2">
           <label
@@ -34,6 +85,8 @@ function ContactForm() {
             name="name"
             type="text"
             required
+            value={name}
+            onChange={(e) => setName(e.target.value)}
             placeholder="Dein Name"
             className="
               w-full
@@ -66,6 +119,8 @@ function ContactForm() {
             name="email"
             type="email"
             required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             placeholder="deine@email.de"
             className="
               w-full
@@ -98,6 +153,8 @@ function ContactForm() {
             name="message"
             required
             rows="6"
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
             placeholder="Deine Nachricht..."
             className="
               w-full
@@ -117,30 +174,47 @@ function ContactForm() {
           />
         </div>
 
+        {/* SUCCESS */}
+        {status === "success" && (
+          <p className="text-center font-oswald text-sm text-green-500">
+            Nachricht erfolgreich gesendet!
+          </p>
+        )}
+
+        {/* ERROR */}
+        {status === "error" && (
+          <p className="text-center font-oswald text-sm text-red-500">
+            Nachricht konnte nicht gesendet werden.
+          </p>
+        )}
+
         {/* BUTTON */}
         <button
           type="submit"
+          disabled={isSending}
           className="
             mt-4
-          flex
-          w-full
-          items-center
-          justify-center
-          border-2
-          border-[#ffaf01]
-          bg-transparent
-          py-3
-          font-oswald
-          text-[14px]
-          font-bold
-          uppercase
-          text-[#ffaf01]
-          md:w-[300px]
-          md:self-center
-          lg:w-[320px]k
+            flex
+            w-full
+            items-center
+            justify-center
+            border-2
+            border-[#ffaf01]
+            bg-transparent
+            py-3
+            font-oswald
+            text-[14px]
+            font-bold
+            uppercase
+            text-[#ffaf01]
+            disabled:cursor-not-allowed
+            disabled:opacity-50
+            md:w-[300px]
+            md:self-center
+            lg:w-[320px]
           "
         >
-          Nachricht senden
+          {isSending ? "Wird gesendet..." : "Nachricht senden"}
         </button>
       </form>
     </section>

@@ -8,6 +8,7 @@ dotenv.config();
 const foodRouter = require("./routes/foodRoutes");
 const authRouter = require("./routes/authRoutes");
 const categoryRouter = require("./routes/categoryRoutes");
+const contactRoutes = require("./routes/contactRoutes");
 
 const app = express();
 
@@ -19,13 +20,12 @@ app.use(
 
 app.use(express.json());
 
-app.use(express.json());
-
 app.use("/uploads", express.static("uploads"));
 
 app.use("/api/food", foodRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/categories", categoryRouter);
+app.use("/api/contact", contactRoutes);
 
 app.get("/api/test", (req, res) => {
   res.status(200).json({
