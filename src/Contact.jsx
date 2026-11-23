@@ -27,8 +27,8 @@ function Contact() {
       <div className="flex flex-col gap-12">
         <ContactNaslov />
         <ContactInfo />
-        <ReservationForm />
         <ContactMap />
+        <ReservationForm />
         <ContactForm />
       </div>
     </div>
