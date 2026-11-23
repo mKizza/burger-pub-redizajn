@@ -35,12 +35,12 @@ function MenuTrack() {
         <NavLink
           to="/contact"
           className={({ isActive }) =>
-            `flex h-9 w-[78px] shrink-0 items-center justify-center bg-[#ffaf01] font-oswald text-sm font-normal text-black transition-colors hover:text-white sm:h-10 sm:w-[100px] sm:text-base ${
+            `flex h-9 w-[116px] shrink-0 items-center justify-center whitespace-nowrap bg-[#ffaf01] font-oswald text-xs font-normal text-black transition-colors hover:text-white sm:h-10 sm:w-[160px] sm:text-base ${
               isActive ? "border-b-2 border-white" : ""
             }`
           }
         >
-          KONTAKT
+          KONTAKT | RESERVIEREN
         </NavLink>
       </nav>
     </div>

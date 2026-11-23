@@ -1,6 +1,6 @@
 function Backgroundtext() {
   return (
-    <div className="background-text flex translate-x-2 rotate-[-5deg] flex-col justify-center gap-1 -translate-y-5 sm:translate-y-0">
+    <div className="background-text flex translate-x-2 rotate-[-5deg] flex-col justify-center gap-1">
       <h1 className="ml-5 font-anton font-normal text-[2rem]  leading-[1.1] text-white sm:text-[4rem] lg:ml-[10rem] lg:text-[4rem]">
         DEIN BURGER.
       </h1>

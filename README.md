@@ -1,18 +1,27 @@
-# React + Vite
+# Burger Pub München — website
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+The website of Burger Pub, Milbertshofener Str. 34, 80807 München (https://burgerpubmunchen.de): a public site with the menu and a contact form, and a small admin for the menu.
 
-Currently, two official plugins are available:
+- **Site:** React 19, Vite 8, Tailwind CSS 4, React Router 7, in the repo root. Hosted on Vercel.
+- **API:** Express 5 and MongoDB (Mongoose) in `backend/`, with ImageKit for dish photos and Gmail for the contact form.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Start here
 
-## React Compiler
+- **New developer:** [docs/onboarding.md](docs/onboarding.md)
+- **Rules and an index of every doc:** [CLAUDE.md](CLAUDE.md)
+- **Env keys, URLs, constants, open questions:** [docs/variables.md](docs/variables.md)
+- **How the code is laid out:** [docs/architecture.md](docs/architecture.md)
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+## Quick start
 
-Note: This will impact Vite dev & build performances.
+```bash
+npm ci && (cd backend && npm ci)
+# backend/.env: see docs/onboarding.md, step 3
+cd backend && node seedCategories.js && node seedFood.js && node createAdmin.js
+node server.js                    # the API on :5000
+npm run dev                       # in the repo root: the site on :5173
+```
 
-## Expanding the ESLint configuration
+The site shows a maintenance page until launch (`src/App.jsx`); [docs/hosting-and-deployment.md](docs/hosting-and-deployment.md#maintenance-mode) explains it.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Never commit secret values: name the key and where it's kept.

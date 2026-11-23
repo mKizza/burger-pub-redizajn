@@ -50,7 +50,7 @@ function ContactForm() {
   }
 
   return (
-    <section className="w-full px-5 pt-14 pb-12">
+    <section className="w-full px-5! pt-14! pb-12!">
       {/* NASLOV */}
       <div className="flex items-center gap-3">
         <h2 className="shrink-0 font-anton text-[36px] uppercase text-[#ffffff]">
@@ -64,13 +64,13 @@ function ContactForm() {
         <div className="h-[1px] flex-1 bg-[#ffaf01]" />
       </div>
 
-      <p className="mt-2 font-oswald text-[13px] text-white/70">
+      <p className="mt-2! font-oswald text-[13px] text-white/70">
         Du hast Fragen oder möchtest uns etwas mitteilen? Schreib uns einfach
         eine Nachricht.
       </p>
 
       {/* FORMA */}
-      <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-5">
+      <form onSubmit={handleSubmit} className="mt-8! flex flex-col gap-5">
         {/* IME */}
         <div className="flex flex-col gap-2">
           <label
@@ -93,8 +93,8 @@ function ContactForm() {
               border
               border-[#ffaf01]
               bg-black/30
-              px-4
-              py-3
+              px-4!
+              py-3!
               font-oswald
               text-[14px]
               text-white
@@ -127,8 +127,8 @@ function ContactForm() {
               border
               border-[#ffaf01]
               bg-black/30
-              px-4
-              py-3
+              px-4!
+              py-3!
               font-oswald
               text-[14px]
               text-white
@@ -162,8 +162,8 @@ function ContactForm() {
               border
               border-[#ffaf01]
               bg-black/30
-              px-4
-              py-3
+              px-4!
+              py-3!
               font-oswald
               text-[14px]
               text-white
@@ -193,7 +193,7 @@ function ContactForm() {
           type="submit"
           disabled={isSending}
           className="
-            mt-4
+            mt-4!
             flex
             w-full
             items-center
@@ -201,7 +201,7 @@ function ContactForm() {
             border-2
             border-[#ffaf01]
             bg-transparent
-            py-3
+            py-3!
             font-oswald
             text-[14px]
             font-bold

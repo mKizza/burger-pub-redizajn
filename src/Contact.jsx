@@ -1,6 +1,7 @@
 import MenuTrack from "./MenuTrack";
 import ContactNaslov from "./ContactNaslov";
 import ContactInfo from "./ContactInfo";
+import ReservationForm from "./ReservationForm";
 import ContactMap from "./ContactMap";
 import ContactForm from "./ContactForm";
 
@@ -26,6 +27,7 @@ function Contact() {
       <div className="flex flex-col gap-12">
         <ContactNaslov />
         <ContactInfo />
+        <ReservationForm />
         <ContactMap />
         <ContactForm />
       </div>

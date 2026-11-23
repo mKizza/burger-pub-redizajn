@@ -9,6 +9,7 @@ const foodRouter = require("./routes/foodRoutes");
 const authRouter = require("./routes/authRoutes");
 const categoryRouter = require("./routes/categoryRoutes");
 const contactRoutes = require("./routes/contactRoutes");
+const reservationRoutes = require("./routes/reservationRoutes");
 
 const app = express();
 
@@ -39,6 +40,7 @@ app.use("/api/food", foodRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/categories", categoryRouter);
 app.use("/api/contact", contactRoutes);
+app.use("/api/reservations", reservationRoutes);
 
 app.get("/api/test", (req, res) => {
   res.status(200).json({

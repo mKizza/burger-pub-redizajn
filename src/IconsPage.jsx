@@ -4,7 +4,7 @@ function IconsPage() {
       href="https://www.google.com/maps/dir/?api=1&destination=Milbertshofener+Str.+34,+80807+M%C3%BCnchen,+Germany"
       target="_blank"
       rel="noopener noreferrer"
-      className="relative z-10 flex flex-row items-center gap-3 -translate-y-12 cursor-pointer pointer-events-auto"
+      className="relative z-10 flex flex-row items-center gap-3 cursor-pointer pointer-events-auto"
     >
       <img
         src="/icons/location.png"
