@@ -2,9 +2,9 @@ import { API_URL } from "../config";
 
 function MenuSection({ section, first = false }) {
   return (
-    <section className={`${first ? "" : "mt-14"} w-full`}>
+    <section className={`${first ? "" : "mt-14!"} w-full`}>
       {/* CATEGORY TITLE */}
-      <div className="mb-7 flex items-center gap-4">
+      <div className="mb-7! flex items-center gap-4">
         <h2 className="shrink-0 font-oswald text-[24px] font-bold uppercase text-[#ffaf01] md:text-[28px]">
           {section.title}
         </h2>
@@ -41,7 +41,7 @@ function MenuSection({ section, first = false }) {
             )}
 
             {/* CONTENT */}
-            <div className="p-5 sm:p-6">
+            <div className="p-5! sm:p-6!">
               <div className="flex items-start justify-between gap-5">
                 <h3 className="font-oswald text-[21px] leading-tight font-bold uppercase text-white sm:text-[23px]">
                   {item.name}
@@ -53,7 +53,7 @@ function MenuSection({ section, first = false }) {
               </div>
 
               {item.description && (
-                <p className="mt-4 max-w-[90%] font-oswald text-[15px] leading-[1.6] text-white/60 sm:text-[16px]">
+                <p className="mt-4! max-w-[90%] font-oswald text-[15px] leading-[1.6] text-white/60 sm:text-[16px]">
                   {item.description}
                 </p>
               )}

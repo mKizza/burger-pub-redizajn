@@ -20,7 +20,7 @@ The website of Burger Pub, a burger restaurant at Milbertshofener Str. 34, 80807
 
 **Hosting:** the site on Vercel (a push to `main` deploys it), the API and its MongoDB on hosts nobody has written down yet (ASK the colleague who built it). See [docs/hosting-and-deployment.md](docs/hosting-and-deployment.md).
 
-**Styling trap:** Tailwind's margin and padding classes (`m-*`, `p-*`) do nothing on this site: an unlayered `* { margin: 0; padding: 0 }` in `src/App.css` overrides every utility. The reset stays (decided 2026-11-23: deleting it would change every page). Where spacing is needed, use `gap-*`, heights and widths, or Tailwind's important modifier (`px-4!`, `mt-8!`, as the contact and reservation forms do), and look at the result in a browser before you trust a class ([docs/known-issues.md](docs/known-issues.md#site)).
+**Styling trap:** Tailwind's margin and padding classes (`m-*`, `p-*`) do nothing on this site: an unlayered `* { margin: 0; padding: 0 }` in `src/App.css` overrides every utility. The reset stays (decided 2026-11-23: deleting it would change every page). Where spacing is needed, use `gap-*`, heights and widths, or Tailwind's important modifier (`px-4!`, `mx-auto!`, as the menu page and the contact and reservation forms do), and look at the result in a browser before you trust a class ([docs/known-issues.md](docs/known-issues.md#site)).
 
 **If `CLAUDE.local.md` exists next to this file**, it describes this machine's setup (ports, how the servers and MongoDB run) and wins over the defaults in these docs.
 

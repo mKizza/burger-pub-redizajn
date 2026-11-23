@@ -63,9 +63,9 @@ function Menu() {
 
         <UnsereMenuNaslov />
 
-        <main className="mx-auto w-full max-w-[1200px] px-4 pb-20 sm:px-6 lg:px-8">
+        <main className="mx-auto! w-full max-w-[1200px] px-4! pt-8! pb-20! sm:px-6! lg:px-8!">
           {loading ? (
-            <p className="py-20 text-center font-oswald text-white">
+            <p className="py-20! text-center font-oswald text-white">
               MENÜ WIRD GELADEN...
             </p>
           ) : (

@@ -32,7 +32,7 @@ Against a local API and database with the seed loaded ([onboarding.md](onboardin
 
 - [ ] `/`: the hero, the address link, the scrolling "Unsere Favoriten" carousel, the wall image; HOME / MENU / KONTAKT | RESERVIEREN in the top bar, the active one underlined.
 - [ ] `/` on short screens (320×568, 375×667, a phone turned sideways 667×375, a window of 800×600 and 1440×500): the yellow swoosh under "Mitten in Milbertshofen." stays above the address, and "DEIN BURGER." stays below the logo.
-- [ ] `/menu`: "MENÜ WIRD GELADEN..." briefly, then 7 sections in order (BEEF BURGER first, DIPS last), prices as `14,50 €`, the five beef burgers with photos, the others with the placeholder.
+- [ ] `/menu`: "MENÜ WIRD GELADEN..." briefly, then 7 sections in order (BEEF BURGER first, DIPS last), prices as `14,50 €`, the five beef burgers with photos, the others with the placeholder. On a wide screen (1440 px and up) the column is centered with equal space left and right; on a phone the cards keep a margin from the screen edges.
 - [ ] `/menu` with the API stopped: the page stays empty below the title (today's behaviour: [known-issues.md](known-issues.md#site)).
 - [ ] `/contact`: the details, the map, "In Google Maps öffnen →"; the form shows "Nachricht erfolgreich gesendet!" (with a local mail catcher) or "Nachricht konnte nicht gesendet werden." (without credentials), and the API logs accordingly. Never with production's Gmail credentials.
 - [ ] The top bar's "KONTAKT | RESERVIEREN" button fits next to HOME and MENU at 360 px and 375 px, and leads to `/contact`.
