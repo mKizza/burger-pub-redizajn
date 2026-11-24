@@ -1,79 +1,140 @@
-@import url("https://fonts.googleapis.com/css2?family=Anton&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@100..900&display=swap");
+@import "@fontsource/anton/latin.css";
+@import "@fontsource/anton/latin-ext.css";
+@import "@fontsource-variable/oswald/wght.css";
+@import "@fontsource-variable/montserrat/wght.css";
+@import "@fontsource-variable/caveat/wght.css";
 
 @import "tailwindcss";
 
 @theme {
-  --font-anton: "Anton", sans-serif;
-  --font-montserrat: "Montserrat", sans-serif;
-  --font-oswald: "Oswald", sans-serif;
-  --font-caveat: "Caveat", cursive;
-}
+  --font-anton: "Anton", "Impact", sans-serif;
+  --font-oswald: "Oswald Variable", "Arial Narrow", sans-serif;
+  --font-montserrat: "Montserrat Variable", system-ui, sans-serif;
+  --font-caveat: "Caveat Variable", cursive;
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  /* background-color: rgba(0, 0, 0, 0.904); */
-}
+  --color-brand: #ffaf01;
+  --color-brand-soft: #ffc23d;
+  --color-ember: #f58220;
+  --color-ink: #0b0b0b;
+  --color-coal: #111111;
+  --color-char: #181818;
+  --color-smoke: #222222;
 
-body {
-  background-color: rgba(0, 0, 0, 0.904);
-}
+  --animate-marquee: marquee 45s linear infinite;
+  --animate-fade-up: fade-up 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  --animate-flash: flash 2.4s ease-out 1;
 
-.reservation {
-  display: inline-block;
-  padding: 11px 22px;
-  border: 2px solid #f58220;
-  border-radius: 8px;
-  color: #f58220;
-  text-decoration: none;
-  font-weight: 700;
-  letter-spacing: 1.5px;
-  cursor: pointer;
-  transition: all 0.25s ease;
-}
-
-.reservation:hover {
-  color: white;
-  background-color: #f58220;
-}
-
-.background-image {
-  filter: brightness(0.45);
-  -webkit-mask-image: linear-gradient(to top, transparent 0%, black 10%);
-  -webkit-mask-composite: source-in;
-
-  mask-image: linear-gradient(to top, transparent 0%, black 10%);
-  mask-composite: intersect;
-}
-
-.border-filter {
-  filter: brightness(0.85);
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 10%);
-  -webkit-mask-composite: source-in;
-
-  mask-image: linear-gradient(to bottom, transparent 0%, black 10%);
-  mask-composite: intersect;
-}
-
-.allside-padding {
-  padding-left: 30px;
-  padding-right: 30px;
-}
-
-@keyframes marquee {
-  from {
-    transform: translateX(0);
+  @keyframes marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
   }
 
-  to {
-    transform: translateX(-15%);
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(18px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes flash {
+    0%,
+    40% {
+      box-shadow:
+        0 0 0 2px var(--color-brand),
+        0 0 40px rgb(255 175 1 / 0.35);
+    }
+    100% {
+      box-shadow:
+        0 0 0 2px transparent,
+        0 0 0 transparent;
+    }
   }
 }
 
-.animate-marquee {
-  animation: marquee 10s linear infinite;
+@layer base {
+  html {
+    background-color: var(--color-ink);
+    color-scheme: dark;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    background-color: var(--color-ink);
+    color: #fff;
+    font-family: var(--font-montserrat);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background-color: var(--color-brand);
+    color: #000;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-brand);
+    outline-offset: 3px;
+  }
+
+  input,
+  textarea,
+  select {
+    color-scheme: dark;
+  }
+}
+
+@layer components {
+  .swoosh {
+    position: relative;
+    display: inline-block;
+  }
+
+  .swoosh::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -0.28em;
+    width: var(--swoosh-width, 100%);
+    height: max(8px, 0.2em);
+    background-color: var(--color-brand);
+    clip-path: polygon(0 0, 100% 40%, 96% 75%, 0 100%);
+    border-radius: 9999px 9999px 0 9999px;
+    transform: rotate(-2deg);
+  }
+
+  .grain::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.07;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

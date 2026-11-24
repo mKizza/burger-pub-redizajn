@@ -24,3 +24,9 @@ dist-ssr
 *.sw?
 .env
 backend/.env
+# Tests
+dist-e2e
+test-results
+playwright-report
+blob-report
+.vitest

@@ -2,8 +2,6 @@ const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const Category = require("./models/categoryModel");
 
-dotenv.config();
-
 const categories = [
   {
     name: "BEEF BURGER",
@@ -42,24 +40,28 @@ const categories = [
   },
 ];
 
-async function seedCategories() {
+async function seedCategories({ log = console.log } = {}) {
+  for (const category of categories) {
+    const existingCategory = await Category.findOne({
+      slug: category.slug,
+    });
+
+    if (!existingCategory) {
+      await Category.create(category);
+      log(`Dodana kategorija: ${category.name}`);
+    } else {
+      log(`Kategorija već postoji: ${category.name}`);
+    }
+  }
+}
+
+async function main() {
   try {
     await mongoose.connect(process.env.DATABASE);
 
     console.log("MongoDB spojen");
 
-    for (const category of categories) {
-      const existingCategory = await Category.findOne({
-        slug: category.slug,
-      });
-
-      if (!existingCategory) {
-        await Category.create(category);
-        console.log(`Dodana kategorija: ${category.name}`);
-      } else {
-        console.log(`Kategorija već postoji: ${category.name}`);
-      }
-    }
+    await seedCategories();
 
     console.log("Kategorije završene");
 
@@ -70,4 +72,9 @@ async function seedCategories() {
   }
 }
 
-seedCategories();
+if (require.main === module) {
+  dotenv.config();
+  main();
+}
+
+module.exports = { categories, seedCategories };

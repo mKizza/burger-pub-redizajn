@@ -2,7 +2,7 @@
 
 Every endpoint of the Express API in `backend/`, as the code answers today. How the pieces fit is in [architecture.md](architecture.md); the documents' fields are in [data-model.md](data-model.md).
 
-**Get the contract from code, not from this page, when they disagree:** the routes are in `backend/server.js` and `backend/routes/*.js`, the answers in `backend/controllers/*.js`. Then fix this page.
+**Get the contract from code, not from this page, when they disagree:** the routes are in `backend/app.js` and `backend/routes/*.js`, the answers in `backend/controllers/*.js`. Then fix this page.
 
 ## Conventions
 
@@ -12,7 +12,7 @@ Every endpoint of the Express API in `backend/`, as the code answers today. How 
   - success: `{"status": "success", …}`, with the payload under `data` (`data.food`, `data.categories`, `data.category`) and, for lists, a `results` count;
   - client error: `{"status": "fail", "message": "…"}` (4xx);
   - server error: `{"status": "error", "message": "…"}` (500), where `message` is often the raw exception text.
-- **Messages** are Croatian, except the contact form's, which are German (the site shows them to visitors).
+- **Messages** are Croatian, except the contact form's and the reservation's, which are German (the site shows them to visitors).
 - **Documents** come straight from Mongoose: `_id` (an ObjectId string) and `__v` included, field names camelCase.
 - **No pagination, no filtering, no sorting parameters.** Lists are sorted by `order`.
 - **Some errors aren't JSON:** a refused CORS origin (500), malformed JSON (400), a non-image upload (500) and an unknown path (404) get Express's default HTML page. With `NODE_ENV` other than `production`, that page includes the stack trace.
@@ -23,8 +23,8 @@ Writes need the admin's token: `Authorization: Bearer <token>`, from `POST /api/
 
 | Status | `message` | When |
 |---|---|---|
-| 401 | `Niste prijavljeni` | no `Authorization: Bearer …` header |
-| 401 | `Nevažeći ili istekli token` | the token doesn't verify or has expired |
+| 401 | `Niste prijavljeni` | no token: no `Authorization` header, one that doesn't start with `Bearer`, or one with nothing after a space (`Bearer` alone, `Bearerxyz`) |
+| 401 | `Nevažeći ili istekli token` | the token (whatever follows the first space) doesn't verify or has expired |
 | 401 | `Admin više ne postoji` | the token's admin was deleted |
 
 ### `POST /api/auth/login`
@@ -36,7 +36,7 @@ Body: `{"username": "…", "password": "…"}`.
 | 200 | `{"status": "success", "token": "<JWT>"}`. The JWT carries `{id}` (the admin's `_id`) and expires after `JWT_EXPIRES_IN` |
 | 400 | `{"status": "fail", "message": "Unesite korisničko ime i lozinku"}`: a field is missing |
 | 401 | `{"status": "fail", "message": "Pogrešno korisničko ime ili lozinka"}`: no such user, or the wrong password (the same answer for both) |
-| 500 | `{"status": "error", "message": "…"}`: for example `JWT_SECRET` or `JWT_EXPIRES_IN` missing |
+| 500 | `{"status": "error", "message": "…"}`: for example `JWT_SECRET` or `JWT_EXPIRES_IN` missing, or no JSON body at all: `Cannot destructure property 'username' of 'req.body' as it is undefined.` |
 
 No rate limit. No refresh, no logout endpoint: logging out is the site deleting its copy of the token.
 
@@ -62,7 +62,7 @@ Public. All categories, sorted by `order` ascending.
 
 ### `POST /api/categories`
 
-Admin. Body: the category's fields, `{"name": "…", "slug": "…", "order": 8}`; the whole body is passed to `Category.create`.
+Admin. Body: the category's fields, `{"name": "…", "slug": "…", "order": 8}`; the whole body is passed to `Category.create`. The admin sends all three: a slug made unique against the existing ones, and `order` = the highest + 1.
 
 | Status | Body |
 |---|---|
@@ -78,7 +78,7 @@ Admin. Body: any of the fields; validators run.
 | 200 | `{"status": "success", "data": {"category": {…}}}`, the updated category. **`"category": null` with 200 when no category has that id** |
 | 400 | `{"status": "fail", "message": "…"}`: validation, or an `_id` that isn't an ObjectId (`Cast to ObjectId failed …`) |
 
-The site doesn't call it today.
+The admin sends `{"name": "…"}` to rename a category (the slug stays) and `{"order": n}` to move one: it renumbers the categories 1 … n and sends one request per category whose `order` changed.
 
 ### `DELETE /api/categories/:id`
 
@@ -144,7 +144,7 @@ With a file, the API uploads it to ImageKit first and sets `image` and `imageFil
 | 400 | `{"status": "fail", "message": "…"}`: validation ("Hrana mora imati naziv", "Hrana mora imati cijenu", "Hrana mora imati kategoriju", or a cast error for a price that isn't a number), or ImageKit refusing the upload (a bad key) |
 | 500 | HTML: the file isn't an image ("Možete uploadati samo slike") |
 
-A new dish without `order` gets 0, so it sorts before the seeded dishes ([known-issues.md](known-issues.md#admin)).
+The admin sends `order` with a new dish: the highest `order` in its category + 1, so it sorts last. A request without `order` gets 0, which sorts before the seeded dishes.
 
 ### `PATCH /api/food/:id`
 
@@ -176,9 +176,9 @@ Public. Body: `{"name": "…", "email": "…", "message": "…"}`. Sends one ema
 |---|---|
 | 200 | `{"status": "success", "message": "Nachricht erfolgreich gesendet."}` |
 | 400 | `{"status": "fail", "message": "Bitte füllen Sie alle Felder aus."}`: a field is missing or empty |
-| 500 | `{"status": "error", "message": "Nachricht konnte nicht gesendet werden."}`: sending failed (no or wrong Gmail credentials); the API logs `EMAIL ERROR` |
+| 500 | `{"status": "error", "message": "Nachricht konnte nicht gesendet werden."}`: sending failed (no or wrong Gmail credentials), or the request had no JSON body at all; the API logs `EMAIL ERROR` |
 
-The email address isn't validated beyond being present (the site's input is `type="email"`). No rate limit, no captcha ([known-issues.md](known-issues.md#security)).
+The API doesn't validate the email address beyond its presence (the site checks its form before sending). No rate limit, no captcha ([known-issues.md](known-issues.md#security)).
 
 ## Reservations
 

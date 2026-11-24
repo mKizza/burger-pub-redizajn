@@ -1,8 +1,8 @@
 # Onboarding: from zero to the site running
 
-This gets a new machine from nothing to a working local copy: MongoDB, the API with the menu seeded, and the site. It takes about 15 minutes. Values are in [variables.md](variables.md); day-to-day running is in [local-development.md](local-development.md).
+This gets a new machine from nothing to a working local copy: MongoDB, the API with the menu seeded, the site, and the tests. It takes about 15 minutes, plus the downloads for the tests. Values are in [variables.md](variables.md); day-to-day running is in [local-development.md](local-development.md).
 
-The repo's `README.md` only points here. This page is the setup guide.
+The repo's `README.md` is a short summary that points here. This page is the setup guide.
 
 ## What you receive
 
@@ -26,8 +26,10 @@ The repo's `README.md` only points here. This page is the setup guide.
 git clone git@github.com:mKizza/burger-pub-redizajn.git
 cd burger-pub-redizajn
 npm ci                    # the site
-cd backend && npm ci      # the API
+cd backend && npm ci      # the API; also downloads a MongoDB binary (~150 MB) for its tests
 ```
+
+Run the API's `npm ci` from inside `backend/`, as above: that's where the binary has to land ([testing.md](testing.md#before-the-first-run)).
 
 ## 3. The API's `.env`
 
@@ -73,17 +75,29 @@ Check it:
 
 - `curl -s http://localhost:5000/api/test` answers `{"status":"success","message":"Burger Pub API radi"}`.
 - `curl -s http://localhost:5000/api/categories` lists 7 categories.
-- `http://localhost:5173` shows the **maintenance page**. That's the code as committed: production is in maintenance mode until launch. To see the site, set `const maintenance = false;` in `src/App.jsx` locally and **don't commit it** ([hosting-and-deployment.md](hosting-and-deployment.md#maintenance-mode)).
-- Then `/menu` shows the seeded menu, and `/admin-login` lets you in with your `ADMIN_*` values.
+- `http://localhost:5173` shows the site, with the favourites from your seeded menu (maintenance mode is off: [hosting-and-deployment.md](hosting-and-deployment.md#maintenance-mode)).
+- `/menu` shows the seeded menu, and `/admin-login` lets you in with your `ADMIN_*` values.
 
-## 6. Run the checks
+## 6. Run the checks and the tests
+
+Once per machine, download Playwright's Chromium (into your user's Playwright cache, outside the repo); the site's browser tests and the end-to-end tests run in it:
+
+```bash
+npx playwright install chromium
+```
+
+Then, in the repo root:
 
 ```bash
 npm run build        # must pass
-npx eslint src       # one known error today (testing.md)
+npm run lint         # the whole repo; must pass
+npm test             # the site: unit and browser tests
+npm run test:api     # the API, against MongoDB in memory
+npm run test:e2e     # end to end; needs ports 5660–5662 free
+npm run test:all     # all of the above but the build, in order
 ```
 
-There are no automated tests; [testing.md](testing.md) has the manual checks.
+None of the tests needs `backend/.env`, your MongoDB or the servers from step 5: they start their own. [testing.md](testing.md) explains each suite and lists the manual checks.
 
 ## 7. Claude Code
 

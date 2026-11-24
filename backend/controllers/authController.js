@@ -75,7 +75,7 @@ exports.protect = async (req, res, next) => {
     req.admin = currentAdmin;
 
     next();
-  } catch (err) {
+  } catch {
     res.status(401).json({
       status: "fail",
       message: "Nevažeći ili istekli token",

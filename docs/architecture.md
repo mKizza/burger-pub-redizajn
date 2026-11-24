@@ -1,17 +1,17 @@
 # Architecture
 
-How the pieces fit together, and what isn't decided yet. The endpoints are in [api-contract.md](api-contract.md), the models in [data-model.md](data-model.md), the values in [variables.md](variables.md).
+How the pieces fit together, and what isn't decided yet. The endpoints are in [api-contract.md](api-contract.md), the models in [data-model.md](data-model.md), the values in [variables.md](variables.md), the tests in [testing.md](testing.md).
 
 ## The big picture
 
 ```
 Browser ──► Site (React SPA, Vite build on Vercel: burgerpubmunchen.de)
-              │  /          home: hero, static carousel (burgers.json), wall
-              │  /menu      dishes by category ──────────────┐
-              │  /contact   address, reservation, map, form ─┤
-              │  /admin-login, /admin   menu admin ──────────┤ fetch, JSON
-              │                                              ▼
-              │                         API (Express 5, backend/server.js)
+              │  /          home: hero, favourites (from the menu), wall
+              │  /menu      dishes by category, search ───────────┐
+              │  /contact   details, reservation, map, form ──────┤
+              │  /admin-login, /admin   menu admin (lazy) ────────┤ fetch, JSON
+              │  anything else          404 page                  ▼
+              │                         API (Express 5: backend/app.js, started by server.js)
               │                           ├─ /api/food        dishes (+ photo upload)
               │                           ├─ /api/categories  categories
               │                           ├─ /api/auth/login  admin login → JWT
@@ -22,7 +22,8 @@ Browser ──► Site (React SPA, Vite build on Vercel: burgerpubmunchen.de)
               │                                │        │           │
               │                            MongoDB   ImageKit     Gmail SMTP
               │                         (Mongoose)  (dish photos)  (→ the pub's inbox)
-              └─ public/  photos, logo, backgrounds (served by the site, not the API)
+              ├─ public/  photos, logo, backgrounds (served by the site, not the API)
+              └─ Google Maps embed, only after the visitor clicks "Karte laden"
 ```
 
 - The site is a client-rendered single-page app: `index.html` loads `src/main.jsx`; Vercel rewrites every path to `index.html` (`vercel.json`).
@@ -34,129 +35,183 @@ Browser ──► Site (React SPA, Vite build on Vercel: burgerpubmunchen.de)
 
 ```
 burger-pub-redizajn/
-├── index.html            the SPA shell (title "Burger Pub München", favicon, lang="en")
+├── index.html            the SPA shell: lang="de", title, favicon, theme-color, og tags
 ├── vite.config.js        React, the React Compiler (via @rolldown/plugin-babel), Tailwind
+├── vitest.config.js      the site's tests, projects "unit" and "browser" (extends vite.config.js)
+├── playwright.config.js  the end-to-end tests
 ├── vercel.json           rewrite /(.*) → /index.html
-├── eslint.config.js      flat config for **/*.{js,jsx}, browser globals (also hits backend/)
-├── burgers.json          the home page carousel: 5 names + photos
+├── eslint.config.js      flat config: the site, its tests, e2e/ and configs, backend/ as Node
+├── burgers.json          the favourites' fallback when the API fails: 5 names + photos
 ├── menu.json             the menu before the API: the seed for seedFood.js
 ├── public/               static files, served at /
-├── src/                  the site (flat: pages and components side by side)
-│   └── components/       the API-backed pieces: MenuSection, Admin, AdminLogin, ProtectedRoute
+├── e2e/                  Playwright specs, support.js, the e2e build's vite.config.js
+├── src/                  the site (below)
 └── backend/
-    ├── server.js         the Express app
+    ├── app.js            the Express app: CORS, JSON, /uploads, the routers
+    ├── server.js         dotenv, the MongoDB connection, listen
     ├── routes/           one router per resource
     ├── controllers/      the handlers (and auth's `protect` middleware)
     ├── models/           Mongoose schemas: Admin, Category, Food
     ├── uploads/          5 photos from before ImageKit, served at /uploads
-    ├── seedCategories.js, seedFood.js, createAdmin.js   one-off scripts
-    └── package.json      no scripts besides a failing "test"; run with `node server.js`
+    ├── seedCategories.js, seedFood.js, createAdmin.js   scripts; they also export their functions
+    ├── test/             the API's tests, the fakes, the e2e API server
+    └── package.json      npm start, npm test
 ```
 
 ## The site
 
+### `src/`
+
+```
+src/
+├── main.jsx         renders <App /> in StrictMode, imports App.css
+├── App.jsx          the maintenance switch, then createBrowserRouter(routes)
+├── routes.jsx       the route table
+├── App.css          Tailwind, the fonts, the design tokens
+├── config.js        API_URL
+├── pages/           one component per route: Home, Menu, Contact, NotFound, Maintenance
+│   └── admin/       AdminShell, AdminLogin, Admin, RequireAdmin, lazyPages.js
+├── components/
+│   ├── layout/      RootLayout, SiteLayout, Header, MobileMenu, Footer, CtaBand, PageHero, WoodBackdrop
+│   ├── home/        Hero, Favorites, WallSection
+│   ├── menu/        MenuNav, MenuSection, MenuStates
+│   ├── contact/     ContactInfo, ReservationForm, ContactForm, ContactMap, SplitHeading
+│   ├── admin/       DishForm, CategoriesPanel
+│   └── ui/          Icon, Button, Field, Dialog, ConfirmDialog, ToastProvider, SectionDivider, PageMeta, keepFocus
+├── hooks/           useMenu, useAdminApi, useScrollSpy, useScrolled, useMediaQuery
+├── lib/             plain modules, no React: api, format, menu, reservation, auth, admin, pub
+└── test/            helpers for the browser tests
+```
+
+Tests sit next to their code: `*.test.js` (unit) and `*.browser.test.jsx` ([testing.md](testing.md)).
+
 ### Entry and routing
 
-- `src/main.jsx` renders `<App />` in `StrictMode` and imports `src/App.css`.
-- `src/App.jsx` holds the **maintenance switch**: `const maintenance = true;` returns a full-screen message ("Burger Pub Munich", "Unsere Website wird derzeit aktualisiert.", "Wir sind bald wieder für euch da! 🍔") before the router, so it covers every path. With `false`, it renders the router:
+- `src/App.jsx` holds the **maintenance switch**, `const maintenance = false;`. Set to `true`, it renders `src/pages/Maintenance.jsx` ("BURGER PUB MÜNCHEN", "Unsere Website wird derzeit aktualisiert.") instead of the router, so every path shows it, the admin included ([hosting-and-deployment.md](hosting-and-deployment.md#maintenance-mode)).
+- Otherwise it renders `createBrowserRouter(routes)` with the table in `src/routes.jsx`:
 
-| Path | Component | What |
+| Path | Page | Inside |
 |---|---|---|
-| `/` | `src/Home.jsx` | the landing page |
-| `/menu` | `src/Menu.jsx` | the menu, from the API |
-| `/contact` | `src/Contact.jsx` | contact details, map, form |
-| `/admin-login` | `src/components/AdminLogin.jsx` | the admin's login form |
-| `/admin` | `src/components/Admin.jsx` inside `src/components/ProtectedRoute.jsx` | the menu admin |
+| `/` | `pages/Home.jsx` | `SiteLayout` |
+| `/menu` | `pages/Menu.jsx` | `SiteLayout` |
+| `/contact` | `pages/Contact.jsx` | `SiteLayout` |
+| anything else | `pages/NotFound.jsx`: "404", "HIER GIBT'S KEINE BURGER.", links to the menu and home; `noindex` | `SiteLayout` |
+| `/admin-login` | `pages/admin/AdminLogin.jsx` | `AdminShell` |
+| `/admin` | `pages/admin/Admin.jsx` inside `RequireAdmin` | `AdminShell` |
 
-There is no catch-all route: any other path renders an empty black page.
+- **`RootLayout`** wraps everything with `ScrollRestoration`: a new page starts at the top, Back restores the position, and a `#hash` (such as `/contact#reservieren`) scrolls to its element. That's why the app uses the data router (`createBrowserRouter`) rather than `<BrowserRouter>`; it adds about 25 kB gzipped (measured 2026-11-24).
+- **`SiteLayout`**: `Header`, `<main id="inhalt">`, `Footer`.
+- **`AdminShell`**: the toast provider, `noindex`, and a `Suspense` spinner. Both admin pages are `lazy` (`pages/admin/lazyPages.js`), so the build puts them in their own chunks and visitors never download them.
+- **Page titles and descriptions** come from `ui/PageMeta.jsx`, which renders React 19 `<title>` and `<meta name="description">` (hoisted into `<head>`): "Menü | Burger Pub München" and so on. The og tags are static in `index.html`.
 
-### The home page (`/`)
+### Data and logic
 
-Built from small presentational components, all static:
+- **`src/lib/api.js`:** `apiFetch(path, {method, body, token, signal})` sends JSON (or `FormData` as is), adds `Authorization: Bearer` when given a token, and returns the parsed body (`null` for 204). Failures throw `ApiError` with `status` (**0 for a network error**) and `serverMessage` (the API's `message`).
+- **The menu cache:** `getMenu()` loads `/api/food` and `/api/categories` in parallel, checks the envelope, and keeps the result in memory for 5 minutes, so home and menu share one load and moving between pages doesn't refetch. A failed load isn't kept. `peekMenu()` returns fresh data synchronously (no skeleton flash on a revisit); `clearMenuCache()` drops it (the admin after every write, the menu's retry button).
+- **`useMenu()`** wraps it: `{status: "loading" | "ready" | "error", food, categories, retry}`; a failure logs `MENU ERROR` in the console.
+- **`src/lib/format.js`:** `formatPrice` (`14,50 €`), `imageUrl` (a path starting with `/uploads/` gets `API_URL` in front, anything else is used as is), `pluralize`, `pluralizeHr` (Croatian plural forms).
+- **`src/lib/menu.js`:** `buildMenu` (groups dishes by `category._id` in the categories' order and drops empty categories), `filterMenu` and `normalizeText` (lower case, accents removed, ß → ss), `pickFavorites`, `dishAnchor` (`gericht-<_id>`).
+- **`src/lib/reservation.js`:** `MAX_GUESTS`, `LIMITS`, the email and phone patterns, `nowInMunich`, `validateReservation`, `validateContact`. They mirror `backend/controllers/reservationController.js`.
+- **`src/lib/auth.js`:** the token in `localStorage.token`; `isTokenUsable` decodes the JWT's `exp` for the UX only (the API checks the signature).
+- **`src/lib/admin.js`:** `slugify`, `nextOrder`, `parsePrice`, `validateDish`, `validateImage`, `moveCategory`, `adminErrorMessage`.
+- **`src/lib/pub.js`:** the pub's name, address, phone, email, Instagram and the Google Maps URLs. Every component reads them from here; only a few strings repeat the address as text (the map's iframe title, the home and contact pages' meta descriptions).
+- State is local `useState`, plus the menu cache and one context (toasts). No data library, no global store.
 
-- `MenuTrack.jsx`: the top bar on every public page. `Logo.jsx` on the left; `NavLink`s HOME, MENU and a yellow "KONTAKT | RESERVIEREN" button (to `/contact`; smaller text and padding on phones) on the right; the active link is underlined. It's absolutely positioned over the page.
-- `Backgroundpicture.jsx`: the hero, `public/Background-image/burger-u-ruci.png` darkened and faded (`.background-image`), with `Backgroundtext.jsx` ("DEIN BURGER. / DEIN PUB. / Mitten in Milbertshofen.", tilted −5°, its yellow swoosh an `::after`) and `IconsPage.jsx` (the address, linking to Google Maps directions). It's one flex column with the picture behind it: a spacer the height of the logo, the text centred in the space left, a spacer for the swoosh, then the address. So the text can't run into the logo or the address on any screen; when a screen is too short, the hero grows past its `min-h` (42vh / 45vh / 70vh) instead. A 48 px spacer below keeps the page under it where it was. The spacers are `div`s with heights, because padding classes don't work on this site ([known-issues.md](known-issues.md#site)).
-- `FooterText.jsx`: the "UNSERE FAVORITEN" divider.
-- `BurgersMarquee.jsx`: `burgers.json` rendered twice in a row and scrolled by the `animate-marquee` keyframes (−15% over 10 s, looping). **Not from the API**: the admin can't change it.
-- `BurgerWallFooter.jsx`: `public/second-page-background/WallBurgerPub.png` with `SecondBackgroundtext.jsx` ("Mehr. als nur. BURGER." and a short paragraph).
+### Home (`/`)
+
+- **Hero:** full screen height, `burger-u-ruci.webp` darkened, "DEIN BURGER. / DEIN PUB." and "Mitten in Milbertshofen." with the yellow swoosh, the buttons "Menü ansehen" (`/menu`) and "Tisch reservieren" (`/contact#reservieren`), and the address with "Route planen" (Google Maps directions).
+- **"Unsere Favoriten"** (`home/Favorites.jsx`), from the API through `useMenu`: the dishes **with a photo**, by category order then dish order, at most 8; each card shows photo, name and price and links to `/menu#gericht-<_id>`. A skeleton while loading. If the API fails, or no dish has a photo, it shows `burgers.json`'s five instead (no price, linking to `/menu`). The cards scroll as a marquee that loops seamlessly (the track is rendered twice and moves −50% in 45 s; the copy is `inert`) and pauses on hover or focus. With reduced motion it's a row you scroll by hand.
+- **Wall section:** `WallBurgerPub.webp`, "Mehr. als nur. BURGER.", a paragraph, "Zum Menü".
+- **CTA band** (`layout/CtaBand.jsx`, also on `/menu`): "Hunger bekommen? TISCH RESERVIEREN.", "Jetzt anfragen" and the phone number.
 
 ### The menu (`/menu`)
 
-`Menu.jsx` fetches `GET /api/food` and `GET /api/categories` in parallel on mount, then builds one section per category, in the categories' `order`:
-
-- dishes are matched by `item.category._id === category._id` (the API populates `category` on each dish), in the API's order (`order` ascending);
-- the price becomes `14,50 €` (`toFixed(2)`, dot → comma);
-- an empty category still gets its heading;
-- while loading it shows "MENÜ WIRD GELADEN..."; on failure it logs `MENU ERROR` to the console and shows nothing.
-
-`components/MenuSection.jsx` renders a section: the category title with a yellow rule, then a grid of cards (one column, two from `lg`) with the photo (or a grey "Burger Pub" placeholder), name, price and description. A photo path starting with `/uploads/` is prefixed with `API_URL`; anything else (an ImageKit URL, a `/burgers-images/…` path from `public/`) is used as is.
-
-The page background is `public/menu-background-image/menu-background-image.png`, fixed, under a 65% black overlay.
+- **Search** under the "UNSER MENU" heading: matches name and description, ignoring case, accents and ß, counts the hits, and offers a reset when nothing matches.
+- **Category chips** (`menu/MenuNav.jsx`): sticky under the header, one per visible category. A scroll-spy (`useScrollSpy`, an `IntersectionObserver`) marks the current one and scrolls the chip row along; a click scrolls to the section and puts its slug in the URL (`#beefBurger`).
+- **Sections** (`menu/MenuSection.jsx`), one per category with dishes, `id` = the category's slug: dishes with a photo as cards (1, 2 or 3 columns), the rest as a dotted "menu board" price list. Every dish has the id `gericht-<_id>`. **Empty categories are hidden**; if none has dishes, the page says "Unser Menü wird gerade aktualisiert."
+- **States** (`menu/MenuStates.jsx`): a skeleton while loading; on failure "Das Menü konnte nicht geladen werden." with the phone number and "Erneut versuchen".
+- **Deep links:** `/menu#gericht-<id>` scrolls the dish into view and flashes its outline (`animate-flash`); `/menu#<slug>` opens at that category.
+- The background (`layout/WoodBackdrop.jsx`, also on the contact and 404 pages) is `contact-background/contact-background-image.webp`, fixed, under a dark gradient.
 
 ### The contact page (`/contact`)
 
-- `ContactNaslov.jsx`: the "KONTAKT" heading and "Wir freuen uns auf dich."
-- `ContactInfo.jsx`: address (Google Maps directions link), phone (`tel:` link), email (plain text, **not** a `mailto:` link), Instagram link.
-- `ReservationForm.jsx` ("Tisch reservieren.", anchor `#reservieren`): a table reservation **request**. Date (today or later in Munich), time, guests (a select, 1–20; one guest is one seat), name, email, phone, an optional message → `POST /api/reservations` as JSON. On success it clears and says the pub confirms by email or phone; on a 400 it shows the API's message (date in the past and the like), otherwise a generic error with the pub's phone number. Groups over 20 are asked to call. Nothing is stored: the request is an email to the pub.
-- `ContactMap.jsx`: a Google Maps embed (`maps?q=…&output=embed`, no API key) darkened with CSS filters, and an "In Google Maps öffnen →" button.
-- `ContactForm.jsx`: name, email, message (all `required`), `POST /api/contact` as JSON. Shows "Nachricht erfolgreich gesendet!" and clears the form, or "Nachricht konnte nicht gesendet werden."; the button reads "Wird gesendet..." while sending.
+- **Four cards** (`contact/ContactInfo.jsx`): address ("Route planen"), phone (`tel:`), email (`mailto:`), Instagram.
+- **The reservation request** (`contact/ReservationForm.jsx`, section `#reservieren`): date (from today, with "Heute" and "Morgen" buttons), time, a guests stepper from 1 to 20, name, email, phone, an optional message.
+  - Each field is checked with `validateReservation` once it's been left, or on submit; a submit with errors focuses the first invalid field.
+  - It sends `POST /api/reservations`. On success a panel ("Danke, <first name>!", the date, time and guests, "Neue Anfrage") replaces the form. On a 400 it shows the API's message as is; any other failure shows a generic message with the phone number, and the form keeps its values.
+  - Groups over 20 are asked to call. Nothing is stored: the request is an email to the pub.
+- **The map** (`contact/ContactMap.jsx`) is click-to-load: "Karte laden", with the note "Beim Laden der Karte werden Daten an Google übertragen." Before the click, nothing is requested from Google. Then a Google Maps embed (no API key) darkened with CSS filters. "In Google Maps öffnen" is always there.
+- **The contact form** (`contact/ContactForm.jsx`): name, email, message, checked the same way (`validateContact`), sent trimmed to `POST /api/contact`; a success panel, or "Nachricht konnte nicht gesendet werden." with the phone number, keeping the text.
+- Both forms use `ui/keepFocus.js` so that a validation message appearing on blur can't shift the layout under a click on the submit button.
 
-The page background is `public/contact-background/contact-background-image.png`, fixed.
+### Header and footer
+
+- **Header** (`layout/Header.jsx`): fixed at the top, transparent over the page, solid once the page scrolls (`useScrolled`, 12 px). A skip link "Zum Inhalt springen" leads to `#inhalt`. From `md`: HOME, MENU and "KONTAKT | RESERVIEREN", the current page marked. On phones: a "RESERVIEREN" button (`/contact#reservieren`) and a menu button that opens `layout/MobileMenu.jsx`, a full-screen native `<dialog>` with the links, "Tisch reservieren", address, phone and Instagram; Escape closes it.
+- **Footer** on every public page: logo and slogan, address with "Route planen", phone, email (`mailto:`), Instagram, the page links, the copyright line.
+- **No opening hours anywhere** (decided, see [Decisions](#decisions)).
 
 ### The admin (`/admin-login`, `/admin`)
 
-- **Login** (`AdminLogin.jsx`): username and password → `POST /api/auth/login`. On success the token goes to `localStorage.token`, an `alert` says "Uspješno ste prijavljeni", and it navigates to `/admin`. On failure it shows the API's message.
-- **The guard** (`ProtectedRoute.jsx`) only checks that `localStorage.token` exists; the API checks it's valid.
-- **The admin** (`Admin.jsx`, one ~700-line component): loads dishes and categories like the menu page, then lists the dishes per category as cards with UREDI (edit) and OBRIŠI (delete).
-  - **Add / edit** (a modal): name, description, price (number, step 0.01), category (a select), photo (JPEG, PNG or WebP; preview shown). Sent as `multipart/form-data` to `POST /api/food` or `PATCH /api/food/:id` with `Authorization: Bearer <token>`. Leaving the photo empty on edit keeps the current one.
-  - **Delete** a dish after a `window.confirm`.
-  - **Categories** (a modal): add one by name (the slug is derived: lower case, `&` removed, spaces → `-`; `order` = the number of categories + 1), delete one with no dishes (the button is disabled otherwise). There's no UI to rename or reorder categories, or to reorder dishes, although the API can update both.
-  - **Logout** (ODJAVA) removes the token and goes to `/admin-login`.
-  - Errors are shown with `alert()`. Every write updates the local state from the API's answer; nothing reloads.
-- The admin's language is Croatian ("Dodaj novo jelo", "Kategorije", "Cijena €").
+The admin's language is Croatian.
+
+- **Login** (`pages/admin/AdminLogin.jsx`): username and password, with a show-password toggle and a loading state. On success the token goes to `localStorage.token`, a toast says "Uspješno ste prijavljeni", and it opens `/admin`. On failure it shows the API's message, or "Greška pri povezivanju sa serverom" when the API can't be reached. A usable token skips the form.
+- **The guard** (`RequireAdmin.jsx`) lets through only a token whose `exp` hasn't passed; otherwise it redirects to the login, which then says "Sesija je istekla. Prijavite se ponovno." if there was a token. Every write goes through `useAdminApi()`: a 401 from the API clears the token and redirects the same way.
+- **The dashboard** (`pages/admin/Admin.jsx`) loads dishes and categories itself (not through the menu cache) and lists the dishes per category, empty categories included; dishes whose category is gone appear under "Bez kategorije". It has a search (name and description), a category filter, "Dodaj novo", a "+ Dodaj" per category, "Uredi" and "Obriši" per dish, "Kategorije", "Pogledaj stranicu" (opens `/menu` in a new tab) and "Odjava".
+- **The dish dialog** (`components/admin/DishForm.jsx`): name, description, price (comma or dot), category, and a photo by picker or drag and drop, previewed through `FileReader` and checked in the browser (JPEG, PNG or WebP, at most 10 MB). It sends `multipart/form-data` to `POST /api/food` or `PATCH /api/food/:id`. A new dish gets `order` = the highest in its category + 1, so it stays last after a reload. Leaving the photo empty on edit keeps the current one. Errors show in the dialog.
+- **Deleting a dish** asks first (`ui/ConfirmDialog.jsx`).
+- **The categories dialog** (`components/admin/CategoriesPanel.jsx`):
+  - add: the slug comes from the name (`slugify`: lower case, umlauts and đ transliterated, `&` and other characters → `-`, `-2`, `-3` … if taken), `order` = the highest + 1;
+  - rename in place (`PATCH {name}`; the slug stays);
+  - move up or down: the categories are renumbered 1 … n and each one whose `order` changed gets a `PATCH {order}`;
+  - delete, only when it has no dishes (the button is disabled otherwise), after a confirmation.
+- **Feedback** is toasts (`ui/ToastProvider.jsx`) and dialogs; there's no `alert()` or `window.confirm`. Error texts come from `adminErrorMessage`: the API's message, "Greška pri povezivanju sa serverom" for a network error, and "Kategorija s tim nazivom već postoji." for MongoDB's duplicate-key error.
+- Every write updates the local state from the API's answer and clears the menu cache; nothing reloads.
 
 ### Design
 
-- **Colours**, written inline as Tailwind arbitrary values, with no tokens: `#ffaf01` (amber: accents, headings, buttons, rules), `#f58220` (orange: the carousel's photo borders), near-black backgrounds (`rgba(0,0,0,0.904)` on `body`; `#0d0d0d`, `#111`, `#151515`, `#181818`, `#222` in the admin), white text with opacity steps (`text-white/70`, `/50`, `/40`).
-- **Fonts** (Google Fonts, `@import`ed in `src/App.css`; tokens in its `@theme` block): `font-anton` (display headings), `font-oswald` (navigation, labels, the menu), `font-caveat` (handwritten accents), `font-montserrat` (body copy, the login page).
-- **Margins and paddings:** Tailwind's `m-*` and `p-*` classes are written all over the code but have no effect: an unlayered `* { margin: 0; padding: 0 }` in `src/App.css` overrides them ([known-issues.md](known-issues.md#site)). What you see is the layout without them. The reset stays (2026-11-23); space things with `gap-*`, heights, widths, spacer elements, or the important modifier (`px-4!`: the menu page and the contact and reservation forms mark their spacing classes this way), and check the result in the browser.
-- **Custom CSS** in `src/App.css`: `.background-image` and `.border-filter` (darken and fade an image's edge with a gradient mask), `@keyframes marquee` / `.animate-marquee`. `.reservation` and `.allside-padding` are unused.
-- **Responsive** with Tailwind's `sm` / `md` / `lg` / `xl` prefixes, mobile first; mobile layout was the focus of the last design commits.
-- The yellow underline swoosh under headings is a `clip-path` polygon on an `::after` pseudo-element (`Backgroundtext.jsx`, `SecondBackgroundtext.jsx`).
+- **Tokens** in `src/App.css`'s `@theme` block, used as Tailwind classes (`bg-brand`, `text-ember`, `font-anton`, `animate-fade-up`):
+
+| Kind | Tokens |
+|---|---|
+| Colours | `brand` `#ffaf01` (amber: accents, buttons), `brand-soft` `#ffc23d` (hover), `ember` `#f58220` (orange: the favourites' borders), `ink` `#0b0b0b` (the page), `coal` `#111111`, `char` `#181818`, `smoke` `#222222` (panels) |
+| Fonts | `font-anton` (display headings), `font-oswald` (navigation, labels, the menu), `font-montserrat` (body copy, the default), `font-caveat` (handwritten accents) |
+| Animations | `animate-marquee` (the favourites), `animate-fade-up` (entrances), `animate-flash` (a dish opened from a link) |
+
+- **Classes** in `@layer components`: `.swoosh` (the yellow brush underline, as an `::after`; `--swoosh-width` shortens it), `.grain` (a noise overlay), `.no-scrollbar`.
+- **Fonts are self-hosted** through the `@fontsource` packages (Anton; Oswald, Montserrat and Caveat as variable fonts), bundled into `dist/assets/`. The site makes no request to Google Fonts: in Germany, loading them from Google's servers sends visitors' IP addresses to Google without consent (LG München I, 2022).
+- **Tailwind's spacing classes** (`m-*`, `p-*`) work as written: there's no reset besides Tailwind's own preflight.
+- **Reduced motion:** a global `prefers-reduced-motion` rule shortens every animation and transition; the favourites become a scrollable row and smooth scrolling becomes instant (`usePrefersReducedMotion`).
+- **Images** are WebP, with `width` and `height`, lazy below the fold, and `fetchPriority="high"` on the hero.
+- **Responsive**, mobile first, with Tailwind's `sm` / `md` / `lg` prefixes; the header switches to the phone layout below `md`.
+- **Accessibility:** labelled fields, errors tied to their fields (`aria-describedby`), live regions for results and toasts, focus moved to success panels, native `<dialog>`s. The end-to-end suite runs axe on every page ([testing.md](testing.md)).
 
 ### Conventions
 
-- One component per file, default export, the file named after the component; `src/` is flat, with the API-backed parts in `src/components/`.
-- Component names mix German and Croatian (`UnserMenuNaslov`: "naslov" is Croatian for title; `ContactNaslov`), and comments are Croatian. Follow the file you're in.
-- State is local `useState`; data loads in `useEffect` with `fetch`. No data library, no context, no global store.
-- No PropTypes, no TypeScript, no tests.
+- One component per file, default export, named after the component (`menu/MenuStates.jsx` exports its three states by name). Pages in `src/pages/`, pieces in `src/components/<area>/`, logic without React in `src/lib/`, with unit tests.
+- Copy is German on the public site, Croatian in the admin; code comments are Croatian, and few.
+- No PropTypes, no TypeScript.
+- Formatting follows Prettier's defaults (double quotes, semicolons, trailing commas), without a Prettier config.
 
-### Dead code
+### Unused files
 
-Files nothing imports; `vite build` ignores them:
-
-| File | What it was |
-|---|---|
-| `src/BeefBurger.jsx`, `ChickenVeggieBurger.jsx`, `Hauptgerichte.jsx`, `BurgerPlatte.jsx`, `Salate.jsx`, `Beilagen.jsx`, `Dips.jsx` | the menu page before the API: one section each, read from `menu.json` |
-| `src/HamburgerMenu.jsx` | a mobile menu; imports `./ButtonOpen` and `./ButtonClosed`, **which don't exist**: importing it breaks the build |
-| `src/HamburgerMenuOptions.jsx` | its links (`#home`, `#lunch`, `#drinks`, `#reservieren` …) from an earlier one-page design; only `HamburgerMenu.jsx` uses it |
-| `src/OpenMenu.jsx` | a menu modal; calls `.map` on `menu.json`, an object, so it would crash |
-
-Unused files in `public/`: `burgers-images/food-6.JPG` to `food-20.JPG`, `Background-image/burger-1.JPG`, `Background-image/burger-1-copy.jpg`, `icons/sat.png`. They're still deployed with the site.
+No source file is unused. In `public/`, these are referenced by nothing and still deployed with the site: `Background-image/burger-u-ruci.png`, `burger-1.JPG`, `burger-1-copy.jpg`; `contact-background/contact-background-image.png`; `menu-background-image/menu-background-image.png`; `Logo/burger-pub-logo2.png`; `icons/location.png`, `icons/sat.png`; `burgers-images/food-6.JPG` to `food-20.JPG`. The background and logo PNGs are the originals of the WebP files the site uses (`menu-background-image.png` is the same file as `contact-background-image.png`, and `burger-pub-logo2.png` the same as `burgerpub-icon.png`). Of the PNGs, `burgerpub-icon.png` (the favicon) and `second-page-background/WallBurgerPub.png` (the `og:image`) are used.
 
 ## The API
 
-### `backend/server.js`
+### `backend/app.js` and `backend/server.js`
 
-In order:
+`app.js` builds the Express app and exports it (the tests use it without a server), in order:
 
-1. `dotenv.config()`: reads `.env` from the working directory.
-2. **CORS** (`cors` with an origin callback): allows requests with no `Origin`, and these origins: `http://localhost:5173`, `https://burgerpubmunchen.de`, `https://www.burgerpubmunchen.de`, `https://burger-pub-redizajn.vercel.app`. Any other origin gets an error, which Express turns into a 500 HTML page.
-3. `express.json()` (default 100 kB limit).
-4. `/uploads` → `express.static("uploads")`, relative to the working directory.
-5. The routers: `/api/food`, `/api/auth`, `/api/categories`, `/api/contact`, and `GET /api/test`.
-6. `mongoose.connect(process.env.DATABASE)`, not awaited: the server listens whether or not it connects, and logs "MongoDB spojen" or the error.
-7. `app.listen(PORT || 5000)`.
+1. **CORS** (`cors` with an origin callback): allows requests with no `Origin`, and these origins: `http://localhost:5173`, `https://burgerpubmunchen.de`, `https://www.burgerpubmunchen.de`, `https://burger-pub-redizajn.vercel.app`. Any other origin gets an error, which Express turns into a 500 HTML page.
+2. `express.json()` (default 100 kB limit).
+3. `/uploads` → `express.static("uploads")`, relative to the working directory.
+4. The routers: `/api/food`, `/api/auth`, `/api/categories`, `/api/contact`, `/api/reservations`, and `GET /api/test`.
+
+`server.js` (`npm start` or `node server.js`):
+
+1. `dotenv.config()`: reads `.env` from the working directory. It runs before `app.js` is loaded, because `foodController.js` reads `IMAGEKIT_PRIVATE_KEY` when it loads.
+2. `mongoose.connect(process.env.DATABASE)`, not awaited: the server listens whether or not it connects, and logs "MongoDB spojen" or the error.
+3. `app.listen(PORT || 5000)`.
 
 There is no error-handling middleware, no 404 handler, no request logging, no security headers, and no rate limiting.
 
@@ -196,12 +251,15 @@ Every handler is an `async` function in a `try/catch` that answers `{status: "su
 - **The menu moved from `menu.json` to MongoDB** (2026-09-24), so the pub can edit it in the admin; `menu.json` is now only the seed.
 - **Photos go to ImageKit, not the API's disk** (2026-09-24, the same commit that added the admin). The five files in `backend/uploads/` are from an earlier, uncommitted version that saved uploads there; the `/uploads` route and the site's `/uploads/` prefix rule stayed for them.
 - **Reservations are requests by email** (2026-11-23, the developer): one number of guests (a guest is a seat), 1–20, any date from today and any time; the pub confirms each one itself. Nothing is stored, and no copy goes to the guest.
-- **Maintenance mode until launch** (2026-10-03): the redesign stays hidden until it's switched off (confirmed pre-launch by the developer, 2026-11-23).
+- **Maintenance mode** was on from 2026-10-03 and was switched off on `main` by the colleague who built the app (2026-11-23, `235c65b`). The switch and its page stay in the code ([hosting-and-deployment.md](hosting-and-deployment.md#maintenance-mode)).
+- **The global `* { margin: 0; padding: 0 }` reset was removed** with the redesign (2026-11-24, the developer), so Tailwind's spacing classes work.
+- **The favourites on the home page come from the API** (2026-11-24, the developer), with `burgers.json` only as the fallback.
+- **No opening hours on the site** until the real hours are known (2026-11-24, the developer).
 
 ## Open decisions
 
 - Where the API and the database run in production, and who owns the accounts (ImageKit, Gmail, Vercel, the domain): ASK ([variables.md](variables.md#to-fill-in-ask)).
-- Whether the home page's carousel should come from the API (the admin can't change it today).
-- What to do with the dead files and the unused photos in `public/`.
-- Whether the admin needs category renaming and ordering, and dish ordering (the API supports both; the UI doesn't).
-- Opening hours: the site doesn't show any (`public/icons/sat.png`, a clock icon, is unused).
+- An Impressum and a Datenschutz page: required, missing, and their content needs the owner's details: ASK ([known-issues.md](known-issues.md#site)).
+- The opening hours, once known.
+- Dish ordering in the admin: the API can change a dish's `order`; the UI can't.
+- What to do with the unused files in `public/`.

@@ -19,7 +19,8 @@ Admin                         (stands alone)
 | `slug` | String | required ("Kategorija mora imati slug"), **unique** (a MongoDB index), trimmed |
 | `order` | Number | required, default 0. The menu shows categories by `order`, ascending |
 
-- The seed's slugs are camelCase and equal `menu.json`'s keys (`beefBurger`); the admin derives a new category's slug from its name in kebab case (`"Drinks & More"` → `drinks-more`). Only the seed uses slugs; nothing in the site reads them.
+- The seed's slugs are camelCase and equal `menu.json`'s keys (`beefBurger`). The admin derives a new category's slug from its name (`slugify` in `src/lib/admin.js`: `"Drinks & More"` → `drinks-more`, `"Süßes"` → `suesses`, with `-2`, `-3` … when it's taken); renaming a category keeps its slug.
+- `seedFood.js` finds categories by slug, and the menu page uses it as each category's anchor (`/menu#beefBurger`).
 - A category can only be deleted when no dish points at it (checked by the API and the admin).
 
 ### `Food` (`backend/models/foodModel.js`)
@@ -30,14 +31,14 @@ A dish on the menu.
 |---|---|---|
 | `name` | String | required ("Hrana mora imati naziv"), trimmed |
 | `description` | String | default `""`; the menu hides an empty one (the dips have none) |
-| `price` | Number | required ("Hrana mora imati cijenu"), euros (`14.5`); no minimum in the schema (the admin's input has `min="0"`) |
+| `price` | Number | required ("Hrana mora imati cijenu"), euros (`14.5`); no minimum in the schema (the admin accepts only a number ≥ 0 with up to two decimals, comma or dot) |
 | `image` | String | default `""`; the photo's address ([Photos](#photos)) |
 | `imageFileId` | String | default `""`; the ImageKit file id, set only for photos uploaded through the admin |
 | `category` | ObjectId → `Category` | required ("Hrana mora imati kategoriju"); the API populates it on reads |
 | `order` | Number | default 0; the position within its category, ascending |
 
 - `GET /api/food` sorts every dish by `order` across all categories; the site then groups them by category, so `order` only matters within a category.
-- Seeded dishes get `order` 1, 2, 3 … per category; dishes added in the admin get 0, and sort first ([known-issues.md](known-issues.md#admin)).
+- Seeded dishes get `order` 1, 2, 3 … per category; a dish added in the admin gets the highest `order` in its category + 1. A dish created through the API without `order` gets 0 and sorts first. The admin can't reorder dishes ([known-issues.md](known-issues.md#admin)).
 - No uniqueness on `name`: the same name may appear in two categories (ONION RINGS is under both HAUPTGERICHTE and BEILAGEN).
 
 ### `Admin` (`backend/models/adminModel.js`)
@@ -52,22 +53,24 @@ A dish on the menu.
 
 ## Photos
 
-A dish's `image` is one of four kinds, and the site decides where to load it from by its prefix (`src/components/MenuSection.jsx`, `src/components/Admin.jsx`):
+A dish's `image` is one of four kinds, and the site decides where to load it from by its prefix (`imageUrl` in `src/lib/format.js`):
 
 | `image` | Comes from | Served by | `imageFileId` |
 |---|---|---|---|
 | `https://ik.imagekit.io/…` | an upload in the admin | ImageKit's CDN | the ImageKit file id |
 | `/burgers-images/food-N.JPG` | `seedFood.js`, from `menu.json` | the **site**, from `public/burgers-images/` | `""` |
 | `/uploads/food-….jpg` | an upload before ImageKit | the **API**, from `backend/uploads/`; the site prefixes `API_URL` | `""` |
-| `""` | no photo | nothing: a grey "Burger Pub" placeholder | `""` |
+| `""` | no photo | nothing: on the menu the dish is a line in the price list instead of a photo card; the favourites leave it out | `""` |
 
 - Uploads go to the ImageKit folder `/burger-pub/food`, named `food-<ms timestamp>-<original file name>`.
 - Replacing a photo in the admin deletes the old ImageKit file **after** the dish is saved; deleting a dish deletes its file. Photos without an `imageFileId` (seeded, `/uploads/`) are never deleted anywhere.
-- The home page's carousel doesn't use the database: `burgers.json` lists five names and `/burgers-images/` paths.
+- The home page's favourites are the dishes with a photo (at most 8). `burgers.json` (five names and `/burgers-images/` paths) is only their fallback when the API fails.
 
 ## Seed scripts
 
 All three live in `backend/`, run with `node <file>` from there (they read `.env` from the working directory), connect to `DATABASE`, print one line per item and exit. None deletes anything.
+
+Each also exports its work as a function, which neither connects nor exits: `seedCategories({log})` (and the `categories` list), `seedFood({log})`, `createAdmin({username, password, log})`. `.env` is loaded only when a script runs directly. The API tests and the e2e API call them on their in-memory databases.
 
 | Script | What it does | Run again |
 |---|---|---|
